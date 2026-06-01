@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>
+<head><script src="https://telegram.org"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CyberAccess</title>
@@ -353,7 +353,7 @@
   </div>
 
   <div id="action-area">
-    <button class="buy-btn disabled" id="buy-btn" onclick="handleBuy()">[ КУПИТЬ ДОСТУП ]</button>
+    < class="buy-btn disabled" id="buy-btn" onclick="handleBuy()">[ КУПИТЬ ДОСТУП ]</>
     <div class="hint" id="hint-text">недостаточно средств — обратись к администратору</div>
   </div>
 </div>
@@ -392,7 +392,7 @@ function updateUI() {
     badge.className = 'status-badge active';
     statusText.textContent = 'ДОСТУП АКТИВЕН';
     actionArea.innerHTML = `
-      <button class="access-btn" onclick="openGroup()">[ ВОЙТИ В ГРУППУ ]</button>
+      < class="access-btn" onclick="openGroup()">[ ВОЙТИ В ГРУППУ ]</>
       <div class="hint">нажми чтобы открыть закрытый канал</div>
     `;
   } else if (userData.balance >= PRICE) {
@@ -420,10 +420,9 @@ async function loadUserData() {
   }
   userData.id = tgUser.id;
   try {
-    const res = await fetch(`${BOT_URL}/user/${tgUser.id}`);
-    const data = await res.json();
-    userData.balance = data.balance || 0;
-    userData.access = data.access || false;
+    const urlParams = new URLSearchParams(window.location.search);
+    userData.balance = parseInt(urlParams.get('balance')) || 0;
+    userData.access = false;
   } catch(e) {
     userData.balance = 0;
     userData.access = false;
@@ -435,27 +434,12 @@ async function handleBuy() {
   if (userData.balance < PRICE) return;
   if (userData.access) { openGroup(); return; }
   try {
-    const res = await fetch(`${BOT_URL}/buy`, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ user_id: userData.id, init_data: tg.initData })
-    });
-    const data = await res.json();
-    if (data.success) {
-      userData.access = true;
-      userData.balance -= PRICE;
-      updateUI();
-      showToast('// доступ получен');
-    } else {
-      showToast('// ошибка — попробуй снова');
-    }
+    tg.sendData("buy_private_access"); 
+    showToast('// Запрос отправлен в бот...');
+    setTimeout(() => { tg.close(); }, 1500);
   } catch(e) {
-    showToast('// ошибка сервера');
+    showToast('// ошибка отправки');
   }
-}
-
-function openGroup() {
-  tg.openTelegramLink(GROUP_LINK);
 }
 
 loadUserData();
