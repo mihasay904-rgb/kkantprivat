@@ -8,7 +8,7 @@ from telegram.ext import (
 
 # ─── НАСТРОЙКИ ────────────────────────────────────────────────────────────────
 TOKEN = ""
-GROUP_LINK = "https://t.me/+"
+GROUP_LINK = "https://t.me/+RqmfI8YSTZxhYTJh"
 ACCESS_PRICE = 200      # цена доступа в рублях
 ADMIN_ID =     # твой Telegram ID (@userinfobot)
 DB_FILE = "users.json"  # файл с балансами
