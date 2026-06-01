@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CyberAccess</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e14;
+    --bg2: #0f1520;
+    --bg3: #141c2b;
+    --accent: #00ff88;
+    --accent2: #00ccff;
+    --danger: #ff3366;
+    --text: #e0e8f0;
+    --muted: #4a6080;
+    --border: rgba(0,255,136,0.15);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Фоновая сетка */
+  body::before {
+    content:'';
+    position:fixed;
+    inset:0;
+    background-image:
+      linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events:none;
+    z-index:0;
+  }
+
+  .container { position:relative; z-index:1; padding: 20px 16px 40px; max-width:480px; margin:0 auto; }
+
+  /* Хедер */
+  .header { text-align:center; padding: 24px 0 32px; }
+  .logo {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    opacity: 0.7;
+  }
+  .title {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    line-height: 1;
+    background: linear-gradient(135deg, #00ff88, #00ccff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    font-family: 'Share Tech Mono', monospace;
+    margin-top: 8px;
+    letter-spacing: 1px;
+  }
+
+  /* Баланс */
+  .balance-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .balance-card::before {
+    content:'';
+    position:absolute;
+    top:0; left:0; right:0;
+    height:1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+  .balance-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .balance-amount {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    font-family: 'Share Tech Mono', monospace;
+  }
+  .balance-id {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-align: right;
+  }
+  .balance-id span { color: var(--accent2); }
+
+  /* Статус доступа */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+  }
+  .status-badge.active {
+    background: rgba(0,255,136,0.1);
+    border: 1px solid rgba(0,255,136,0.3);
+    color: var(--accent);
+  }
+  .status-badge.inactive {
+    background: rgba(255,51,102,0.1);
+    border: 1px solid rgba(255,51,102,0.3);
+    color: var(--danger);
+  }
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  .active .status-dot { background: var(--accent); }
+  .inactive .status-dot { background: var(--danger); animation: none; }
+  @keyframes pulse {
+    0%,100%{ opacity:1; transform:scale(1); }
+    50%{ opacity:0.4; transform:scale(1.4); }
+  }
+
+  /* Продукт */
+  .product-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .product-header {
+    background: var(--bg3);
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .product-tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: var(--accent2);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .product-name {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #fff;
+  }
+  .product-price {
+    position: absolute;
+    top: 20px; right: 20px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .product-price small {
+    font-size: 12px;
+    color: var(--muted);
+    display: block;
+    text-align: right;
+  }
+  .features { padding: 16px 20px; }
+  .feature {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 14px;
+    color: #b0c4d8;
+  }
+  .feature:last-child { border-bottom: none; }
+  .feature-icon {
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--accent);
+    font-size: 12px;
+    margin-top: 2px;
+    min-width: 16px;
+  }
+
+  /* Кнопка */
+  .buy-btn {
+    width: 100%;
+    padding: 18px;
+    background: transparent;
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    color: var(--accent);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+    margin-bottom: 12px;
+  }
+  .buy-btn::before {
+    content:'';
+    position:absolute;
+    inset:0;
+    background: linear-gradient(135deg, rgba(0,255,136,0.1), rgba(0,204,255,0.1));
+    opacity:0;
+    transition: opacity 0.3s;
+  }
+  .buy-btn:hover::before, .buy-btn:active::before { opacity:1; }
+  .buy-btn:active { transform: scale(0.98); }
+  .buy-btn.disabled {
+    border-color: var(--muted);
+    color: var(--muted);
+    cursor: not-allowed;
+  }
+  .buy-btn.success {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .access-btn {
+    width: 100%;
+    padding: 18px;
+    background: linear-gradient(135deg, rgba(0,255,136,0.15), rgba(0,204,255,0.15));
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    color: #fff;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-bottom: 12px;
+  }
+  .access-btn:active { transform: scale(0.98); }
+
+  .hint {
+    text-align: center;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    line-height: 1.6;
+  }
+  .hint a { color: var(--accent2); text-decoration: none; }
+
+  /* Уведомление */
+  .toast {
+    position: fixed;
+    bottom: 20px; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--bg3);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 1px;
+    transition: transform 0.3s;
+    z-index: 100;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* Сканлайны */
+  body::after {
+    content:'';
+    position:fixed;
+    inset:0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.05) 2px,
+      rgba(0,0,0,0.05) 4px
+    );
+    pointer-events:none;
+    z-index:999;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="logo">// secure access portal</div>
+    <div class="title">CYBERACCESS</div>
+    <div class="subtitle">[ закрытое сообщество ]</div>
+  </div>
+
+  <div class="balance-card">
+    <div>
+      <div class="balance-label">баланс</div>
+      <div class="balance-amount" id="balance-display">0₽</div>
+    </div>
+    <div>
+      <div class="balance-id">ID пользователя</div>
+      <div class="balance-id"><span id="user-id-display">—</span></div>
+    </div>
+  </div>
+
+  <div id="status-wrap" style="text-align:center">
+    <span class="status-badge inactive" id="status-badge">
+      <span class="status-dot"></span>
+      <span id="status-text">НЕТ ДОСТУПА</span>
+    </span>
+  </div>
+
+  <div class="product-card">
+    <div class="product-header">
+      <div class="product-tag">// premium access</div>
+      <div class="product-name">Закрытая группа</div>
+      <div class="product-price">200₽<small>разово</small></div>
+    </div>
+    <div class="features">
+      <div class="feature"><span class="feature-icon">[+]</span>CTF задачи и разборы</div>
+      <div class="feature"><span class="feature-icon">[+]</span>Пентест и инструменты</div>
+      <div class="feature"><span class="feature-icon">[+]</span>Burp Suite, Nmap, Metasploit</div>
+      <div class="feature"><span class="feature-icon">[+]</span>OSINT техники</div>
+      <div class="feature"><span class="feature-icon">[+]</span>Живое общение и нетворкинг</div>
+      <div class="feature"><span class="feature-icon">[+]</span>Обучающие материалы</div>
+    </div>
+  </div>
+
+  <div id="action-area">
+    <button class="buy-btn disabled" id="buy-btn" onclick="handleBuy()">[ КУПИТЬ ДОСТУП ]</button>
+    <div class="hint" id="hint-text">недостаточно средств — обратись к администратору</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const tg = window.Telegram.WebApp;
+tg.ready();
+tg.expand();
+
+const GROUP_LINK = "https://t.me/+ССЫЛКА_НА_ГРУППУ";
+const PRICE = 200;
+const BOT_URL = "https://ВАШ_ДОМЕН/api"; // URL твоего сервера
+
+let userData = { balance: 0, access: false, id: null };
+
+function showToast(msg, duration=2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+function updateUI() {
+  document.getElementById('balance-display').textContent = userData.balance + '₽';
+  document.getElementById('user-id-display').textContent = userData.id || '—';
+
+  const badge = document.getElementById('status-badge');
+  const statusText = document.getElementById('status-text');
+  const btn = document.getElementById('buy-btn');
+  const hint = document.getElementById('hint-text');
+  const actionArea = document.getElementById('action-area');
+
+  if (userData.access) {
+    badge.className = 'status-badge active';
+    statusText.textContent = 'ДОСТУП АКТИВЕН';
+    actionArea.innerHTML = `
+      <button class="access-btn" onclick="openGroup()">[ ВОЙТИ В ГРУППУ ]</button>
+      <div class="hint">нажми чтобы открыть закрытый канал</div>
+    `;
+  } else if (userData.balance >= PRICE) {
+    badge.className = 'status-badge inactive';
+    statusText.textContent = 'НЕТ ДОСТУПА';
+    btn.className = 'buy-btn';
+    btn.textContent = '[ КУПИТЬ ДОСТУП ]';
+    hint.textContent = 'баланс достаточен — нажми для покупки';
+  } else {
+    badge.className = 'status-badge inactive';
+    statusText.textContent = 'НЕТ ДОСТУПА';
+    btn.className = 'buy-btn disabled';
+    const need = PRICE - userData.balance;
+    hint.textContent = `не хватает ${need}₽ — обратись к администратору`;
+  }
+}
+
+async function loadUserData() {
+  const tgUser = tg.initDataUnsafe?.user;
+  if (!tgUser) {
+    userData.id = 'demo';
+    userData.balance = 0;
+    updateUI();
+    return;
+  }
+  userData.id = tgUser.id;
+  try {
+    const res = await fetch(`${BOT_URL}/user/${tgUser.id}`);
+    const data = await res.json();
+    userData.balance = data.balance || 0;
+    userData.access = data.access || false;
+  } catch(e) {
+    userData.balance = 0;
+    userData.access = false;
+  }
+  updateUI();
+}
+
+async function handleBuy() {
+  if (userData.balance < PRICE) return;
+  if (userData.access) { openGroup(); return; }
+  try {
+    const res = await fetch(`${BOT_URL}/buy`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ user_id: userData.id, init_data: tg.initData })
+    });
+    const data = await res.json();
+    if (data.success) {
+      userData.access = true;
+      userData.balance -= PRICE;
+      updateUI();
+      showToast('// доступ получен');
+    } else {
+      showToast('// ошибка — попробуй снова');
+    }
+  } catch(e) {
+    showToast('// ошибка сервера');
+  }
+}
+
+function openGroup() {
+  tg.openTelegramLink(GROUP_LINK);
+}
+
+loadUserData();
+</script>
+</body>
+</html>
